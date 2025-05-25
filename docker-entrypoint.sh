@@ -10,10 +10,5 @@ if [ ! -f "$MB_PLUGINS_DIR/snowflake-jdbc-3.14.3.jar" ]; then
   exit 1
 fi
 
-if [ ! -f "$MB_PLUGINS_DIR/arrow-memory-8.0.0.jar" ]; then
-  echo "❌ Missing Arrow memory JAR!"
-  exit 1
-fi
-
 echo "🚀 Launching Metabase..."
 exec /app/run_metabase.sh
