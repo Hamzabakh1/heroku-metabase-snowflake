@@ -1,21 +1,36 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
-echo "🔧 Starting Metabase entrypoint..."
-
-# Check Snowflake JDBC driver
-if [ ! -f "$MB_PLUGINS_DIR/snowflake-jdbc-3.14.3.jar" ]; then
-  echo "❌ Snowflake JDBC driver not found!"
-  exit 1
+# Bind to Heroku dynamic port
+if [ "$PORT" ]; then
+    export MB_JETTY_PORT="$PORT"
 fi
 
-# Check Arrow dependencies
-for file in arrow-vector-8.0.0.jar arrow-format-8.0.0.jar arrow-memory-core-8.0.0.jar; do
-  if [ ! -f "$MB_PLUGINS_DIR/$file" ]; then
-    echo "❌ Missing required Arrow dependency: $file"
-    exit 1
-  fi
-done
+# Use DATABASE_URL if provided
+if [ "$DATABASE_URL" ]; then
+    export MB_DB_CONNECTION_URI="$DATABASE_URL"
+fi
 
-echo "🚀 Launching Metabase..."
-java -Xmx300m -jar /app/metabase.jar
+# Java memory optimizations for Heroku
+JAVA_OPTS="$JAVA_OPTS -XX:+UnlockExperimentalVMOptions"
+JAVA_OPTS+=" -XX:+UseContainerSupport"
+JAVA_OPTS+=" -XX:-UseGCOverheadLimit"
+JAVA_OPTS+=" -XX:+UseCompressedOops"
+JAVA_OPTS+=" -XX:+UseCompressedClassPointers"
+JAVA_OPTS+=" -Xverify:none"
+JAVA_OPTS+=" -XX:+UseG1GC"
+JAVA_OPTS+=" -XX:+UseStringDeduplication"
+JAVA_OPTS+=" -server"
+JAVA_OPTS+=" -Djava.awt.headless=true"
+JAVA_OPTS+=" -Dfile.encoding=UTF-8"
+
+# Optional timezone
+if [ "$JAVA_TIMEZONE" ]; then
+    echo "  -> Timezone setting detected: $JAVA_TIMEZONE"
+    JAVA_OPTS+=" -Duser.timezone=$JAVA_TIMEZONE"
+fi
+
+echo "JAVA_OPTS: $JAVA_OPTS"
+export JAVA_OPTS
+
+# Start Metabase
+exec /app/run_metabase.sh
