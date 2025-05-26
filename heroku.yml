@@ -1,16 +1,8 @@
-# heroku.yml
 build:
   docker:
     web: Dockerfile
 
 release:
-  # Force-release any Liquibase locks
+  image: Dockerfile        # ← this is wrong
   command:
-    - java
-    - -jar
-    - metabase.jar
-    - migrate
-    - release-locks
-
-run:
-  web: bash ./docker-entrypoint.sh
+    - java --add-opens java.base/java.nio=ALL-UNNAMED -jar metabase.jar migrate release-locks
