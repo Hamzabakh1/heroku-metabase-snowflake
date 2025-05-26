@@ -3,6 +3,9 @@ build:
     web: Dockerfile
 
 release:
-  image: Dockerfile        # ← this is wrong
+  image: web               # ← point at the “web” image you built
   command:
     - java --add-opens java.base/java.nio=ALL-UNNAMED -jar metabase.jar migrate release-locks
+
+run:
+  web: bash ./docker-entrypoint.sh
