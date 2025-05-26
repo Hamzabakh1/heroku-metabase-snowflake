@@ -23,7 +23,7 @@ JAVA_OPTS+=" -server"
 JAVA_OPTS+=" -Djava.awt.headless=true"
 JAVA_OPTS+=" -Dfile.encoding=UTF-8"
 
-# Optional timezone
+# Optional timezone setting
 if [ "$JAVA_TIMEZONE" ]; then
     echo "  -> Timezone setting detected: $JAVA_TIMEZONE"
     JAVA_OPTS+=" -Duser.timezone=$JAVA_TIMEZONE"
@@ -32,5 +32,5 @@ fi
 echo "JAVA_OPTS: $JAVA_OPTS"
 export JAVA_OPTS
 
-# Start Metabase
+# Start Metabase with final run script
 exec /app/run_metabase.sh
