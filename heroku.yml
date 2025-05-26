@@ -1,10 +1,9 @@
-# ── heroku.yml ───────────────────────────────────────────────
 build:
   docker:
     web: Dockerfile
 
 release:
-  # exécute le script qui télécharge et met en cache le driver
+  image: web            # ← point at the “web” image you just built
   command:
     - /app/bin/build-driver-cache.sh
 
