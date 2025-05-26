@@ -1,17 +1,15 @@
-#!/usr/bin/env bash
+# ── docker-entrypoint.sh ────────────────────────────────────
+set -e
 
-# Bind to Heroku dynamic port
-if [ "$PORT" ]; then
-    export MB_JETTY_PORT="$PORT"
-fi
+# Bind dyno Heroku
+[ -n "$PORT" ] && export MB_JETTY_PORT="$PORT"
 
-# Use DATABASE_URL if provided
-if [ "$DATABASE_URL" ]; then
-    export MB_DB_CONNECTION_URI="$DATABASE_URL"
-fi
+# Connexion Snowflake via DATABASE_URL
+[ -n "$DATABASE_URL" ] && export MB_DB_CONNECTION_URI="$DATABASE_URL"
 
-# Java memory optimizations for Heroku
-JAVA_OPTS="$JAVA_OPTS -XX:+UnlockExperimentalVMOptions"
+# Optimisations Java
+JAVA_OPTS="${JAVA_OPTS:-}"
+JAVA_OPTS+=" -XX:+UnlockExperimentalVMOptions"
 JAVA_OPTS+=" -XX:+UseContainerSupport"
 JAVA_OPTS+=" -XX:-UseGCOverheadLimit"
 JAVA_OPTS+=" -XX:+UseCompressedOops"
@@ -23,14 +21,14 @@ JAVA_OPTS+=" -server"
 JAVA_OPTS+=" -Djava.awt.headless=true"
 JAVA_OPTS+=" -Dfile.encoding=UTF-8"
 
-# Optional timezone setting
-if [ "$JAVA_TIMEZONE" ]; then
-    echo "  -> Timezone setting detected: $JAVA_TIMEZONE"
+# Fuseau horaire optionnel
+if [ -n "$JAVA_TIMEZONE" ]; then
+    echo "  -> Timezone: $JAVA_TIMEZONE"
     JAVA_OPTS+=" -Duser.timezone=$JAVA_TIMEZONE"
 fi
 
-echo "JAVA_OPTS: $JAVA_OPTS"
 export JAVA_OPTS
+echo "JAVA_OPTS: $JAVA_OPTS"
 
-# Start Metabase with final run script
+# Lance Metabase
 exec /app/run_metabase.sh
