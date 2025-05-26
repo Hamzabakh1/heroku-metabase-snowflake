@@ -1,18 +1,24 @@
-# Use the official Metabase image as base
+# ── Dockerfile ───────────────────────────────────────────────
 FROM metabase/metabase:latest
 
-# Set working directory
+# Crée le dossier pour les plugins JDBC
+RUN mkdir -p /app/plugins/drivers
+
+# Positionne le répertoire de travail
 WORKDIR /app
 
-# Copy custom entrypoint and run scripts
-COPY docker-entrypoint.sh /app/docker-entrypoint.sh
-COPY run_metabase.sh /app/run_metabase.sh
-
-# Optional: preload script for release phase
+# Copie des scripts
 COPY bin/build-driver-cache.sh /app/bin/build-driver-cache.sh
+COPY docker-entrypoint.sh   /app/docker-entrypoint.sh
+COPY run_metabase.sh        /app/run_metabase.sh
 
-# Ensure scripts are executable
-RUN chmod +x /app/docker-entrypoint.sh /app/run_metabase.sh /app/bin/build-driver-cache.sh
+# Rends les scripts exécutables
+RUN chmod +x /app/bin/build-driver-cache.sh \
+             /app/docker-entrypoint.sh \
+             /app/run_metabase.sh
 
-# Set the entrypoint
+# Expose le port Metabase
+EXPOSE 3000
+
+# Point d’entrée par défaut
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
