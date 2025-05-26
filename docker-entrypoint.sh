@@ -1,34 +1,36 @@
-# ── docker-entrypoint.sh ────────────────────────────────────
-set -e
+#!/usr/bin/env bash
 
-# Bind dyno Heroku
-[ -n "$PORT" ] && export MB_JETTY_PORT="$PORT"
+if [ "$PORT" ]; then
+    export MB_JETTY_PORT="$PORT"
+fi
 
-# Connexion Snowflake via DATABASE_URL
-[ -n "$DATABASE_URL" ] && export MB_DB_CONNECTION_URI="$DATABASE_URL"
+if [ "$DATABASE_URL" ]; then
+    export MB_DB_CONNECTION_URI="$DATABASE_URL"
+fi
 
-# Optimisations Java
-JAVA_OPTS="${JAVA_OPTS:-}"
-JAVA_OPTS+=" -XX:+UnlockExperimentalVMOptions"
-JAVA_OPTS+=" -XX:+UseContainerSupport"
-JAVA_OPTS+=" -XX:-UseGCOverheadLimit"
-JAVA_OPTS+=" -XX:+UseCompressedOops"
-JAVA_OPTS+=" -XX:+UseCompressedClassPointers"
-JAVA_OPTS+=" -Xverify:none"
-JAVA_OPTS+=" -XX:+UseG1GC"
-JAVA_OPTS+=" -XX:+UseStringDeduplication"
-JAVA_OPTS+=" -server"
-JAVA_OPTS+=" -Djava.awt.headless=true"
-JAVA_OPTS+=" -Dfile.encoding=UTF-8"
+# We need to override the $JAVA_OPTS and give it a slightly lower memory limit
+# because Heroku tends to think we can use more memory than we actually can.
+JAVA_OPTS="$JAVA_OPTS -XX:+UnlockExperimentalVMOptions"
+JAVA_OPTS+=" -XX:+UseContainerSupport"         # Tell the JVM to use container info to set heap limit -- see https://devcenter.heroku.com/articles/java-memory-issues#configuring-java-to-run-in-a-container
+JAVA_OPTS+=" -XX:-UseGCOverheadLimit"          # Disable limit to amount of time spent in GC. Better slow than not working at all
+JAVA_OPTS+=" -XX:+UseCompressedOops"           # Use 32-bit pointers. Reduces memory usage
+JAVA_OPTS+=" -XX:+UseCompressedClassPointers"  # Same as above. See also http://blog.leneghan.com/2012/03/reducing-java-memory-usage-and-garbage.html
+JAVA_OPTS+=" -Xverify:none"                    # Skip bytecode verification, the Heroku buildpack comes from us so it's already verified. Speed up launch slightly
+JAVA_OPTS+=" -XX:+UseG1GC"                     # G1GC seems to use slightly less memory in my testing...
+JAVA_OPTS+=" -XX:+UseStringDeduplication"      # Especially when used in combination with string deduplication
 
-# Fuseau horaire optionnel
-if [ -n "$JAVA_TIMEZONE" ]; then
-    echo "  -> Timezone: $JAVA_TIMEZONE"
+# Other Java options
+JAVA_OPTS+=" -server"                  # Run in server mode. This is the default for 64-bit JVM
+JAVA_OPTS+=" -Djava.awt.headless=true" # don't try to start AWT. Not sure this does anything but better safe than wasting memory
+JAVA_OPTS+=" -Dfile.encoding=UTF-8"    # Use UTF-8
+
+# Set timezone using the JAVA_TIMEZONE variable if present
+if [ "$JAVA_TIMEZONE"]; then
+    echo "  -> Timezone setting detected: $JAVA_TIMEZONE"
     JAVA_OPTS+=" -Duser.timezone=$JAVA_TIMEZONE"
 fi
 
-export JAVA_OPTS
 echo "JAVA_OPTS: $JAVA_OPTS"
+export JAVA_OPTS
 
-# Lance Metabase
-exec /app/run_metabase.sh
+/app/run_metabase.sh
