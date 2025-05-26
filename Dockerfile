@@ -1,7 +1,10 @@
-FROM metabase/metabase-enterprise:v1.53.14
+FROM metabase/metabase:v1.53.14
 
-COPY docker-entrypoint.sh /app/
+# Limit Java heap to 750 MB
+ENV JAVA_TOOL_OPTIONS="-Xmx750m"
 
-RUN ["chmod", "+x", "/app/docker-entrypoint.sh"]
+# Copy your custom entrypoint
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
 
-ENTRYPOINT [ "/app/docker-entrypoint.sh" ]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
