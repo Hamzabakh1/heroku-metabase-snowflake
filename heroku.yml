@@ -1,5 +1,16 @@
+# heroku.yml
 build:
   docker:
     web: Dockerfile
+
+release:
+  # Force-release any Liquibase locks
+  command:
+    - java
+    - -jar
+    - metabase.jar
+    - migrate
+    - release-locks
+
 run:
-  web: /app/docker-entrypoint.sh
+  web: bash ./docker-entrypoint.sh
