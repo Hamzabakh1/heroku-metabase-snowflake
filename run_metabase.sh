@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
 
-# Run Metabase using any JAVA_OPTS passed from docker-entrypoint.sh
+# ── run_metabase.sh ──────────────────────────────────────────
+set -e
 exec java $JAVA_OPTS -jar metabase.jar
