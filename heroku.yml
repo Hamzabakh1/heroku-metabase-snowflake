@@ -1,5 +1,8 @@
 build:
   docker:
-    web: Dockerfile
+    web:
+      dockerfile: Dockerfile
+      args:
+        METABASE_VERSION: "0.54.8"
 run:
-  web: java $JAVA_OPTS -jar /app/metabase.jar
+  web: /app/docker-entrypoint.sh
