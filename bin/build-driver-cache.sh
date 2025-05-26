@@ -1,21 +1,7 @@
-#!/usr/bin/env bash
-
-# Preload Metabase database drivers to reduce startup time on Heroku
-
-echo "🔄 Starting Metabase driver preload..."
-
-# Ensure metabase.jar is present
-if [ ! -f metabase.jar ]; then
-  echo "❌ Error: metabase.jar not found. Make sure it's in the /app directory."
-  exit 1
-fi
-
-# Run Metabase's built-in preload command
-java -cp metabase.jar metabase.driver.util$ preload-drivers
-
-if [ $? -eq 0 ]; then
-  echo "✅ Drivers preloaded successfully."
-else
-  echo "❌ Driver preload failed."
-  exit 1
-fi
+# ── bin/build-driver-cache.sh ────────────────────────────────
+set -e
+echo "⬇️  Téléchargement du driver Snowflake JDBC…"
+mkdir -p /app/plugins/drivers
+curl -L "https://repo1.maven.org/maven2/net/snowflake/snowflake-jdbc/3.13.22/snowflake-jdbc-3.13.22.jar" \
+  -o /app/plugins/drivers/snowflake-jdbc.jar
+echo "✅ Driver Snowflake installé."
