@@ -1,4 +1,4 @@
-FROM metabase/metabase:v1.53.14
+FROM metabase/metabase:latest
 
 # Limit Java heap to 750 MB
 ENV JAVA_TOOL_OPTIONS="-Xmx750m"
