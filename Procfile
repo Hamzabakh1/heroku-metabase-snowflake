@@ -1,1 +1,1 @@
-web: java $JAVA_OPTS -jar /app/metabase.jar
+web: /app/docker-entrypoint.sh
